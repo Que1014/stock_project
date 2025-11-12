@@ -1,0 +1,25 @@
+Fix:
+
+Install pandas datareader as normal using: pip install pandas-datareader
+Under Lib\site-packages\pandas_datareader\compat, open init.py
+Remove the following import: from distutils.version import LooseVersion
+Add the following import: from packaging.version import Version
+Search(Ctrl+F) for LooseVersion and change to Version
+The first 15 lines of your init.py should look like the following:
+
+python
+from packaging.version import Version
+from functools import reduce
+from io import StringIO
+from urllib.error import HTTPError
+
+import pandas as pd
+from pandas.api.types import is_list_like, is_number
+from pandas.io import common as com
+from pandas.testing import assert_frame_equal
+
+PANDAS_VERSION = Version(pd.__version__)
+
+PANDAS_0210 = PANDAS_VERSION >= Version("0.21.0")
+PANDAS_0220 = PANDAS_VERSION >= Version("0.22.0")
+PANDAS_0230 = PANDAS_VERSION >= Version("0.23.0")
