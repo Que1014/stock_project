@@ -91,7 +91,7 @@ class ReportGenerator:
         # 步骤2：构建专业分析提示词
         analysis_prompt = f"""你是美股投资专家，这是{ticker}从{start_date}到{end_date}的交易数据。
         请用简单专业的语言分析{ticker}的走势及其多/空投资机会及操作建议（请在操作建议时，附上信心指数，<20不建议操作；20-40观望；40-60可以清仓，及时止损；60-80可以开始逐步建仓；>80强烈信号，或可以立即操作）：
-        {latest}（如果有数据异常请告诉我）。回答格式至少包含以下三部分：
+        {latest}（我发送了数据列：{latest.columns.tolist()}，请确认你确实收到的可以用于判断的指标，如果有数据异常请告诉我）。回答格式至少包含以下三部分：
         1. 总体操作机会（信心指数）
         2. 市场技术面分析（包含关键支撑位和阻力位）
         3. 操作建议（多头策略/空头策略/观望，信心指数）
@@ -156,11 +156,12 @@ if __name__ == "__main__":
     period = '3mo'
     interval = '1h'
     tickers = [
-        'NFLX', 
-        'ACHR',
-        # 'INTC',
+        'MP', 
+        'NTFX',
+        'PLUG',
         # 'RGTI',
-        # 'QBTS',
+        'RIVN',
+        'NBIS',
     ]
 
     # current_position = ''

@@ -21,7 +21,7 @@ __pycache__/
 # 生成文件
 /report_generated/
 *.ipynb.pdf
-reports/   
+reports/*/*.md
 
 # IDE配置
 .vscode/
