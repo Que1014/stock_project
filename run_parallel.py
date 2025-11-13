@@ -11,6 +11,7 @@ from pathlib import Path
 from importnb import Notebook
 import ipywidgets as widgets
 from IPython.display import display
+from tickets import *
 
 class ReportGenerator:
 
@@ -163,6 +164,8 @@ if __name__ == "__main__":
         'RIVN',
         'NBIS',
     ]
+
+    tickers = watch_list
 
     # current_position = ''
     # current_position = '当前持仓: 多头，占总仓位21%，均价 $56.08。'

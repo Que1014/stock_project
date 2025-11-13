@@ -1,13 +1,24 @@
 watch_list = [
     'AMD','AMZN',
-    'BBAI','BYND',
+    'BBAI', 'BMNR', 'BTQ', 'BYND',
+    'CRWV',
+    'F'
+    'GRAB',
+    'HIVE',
+    'INTC', 'IREN',
+    'LIDR',
+    'MARA', 'MP','MSTR',
     'NBIS','NVDA',
     'OPEN',
-    'PLTR',
+    'PLTR','PLUG', 'PYPL',
+    'QS',
     'RIVN', 'RGTI',
+    'TSLA',
+    'U', 'USAR', 'UUUU'
 ]
 
 leading_stocks = {
+
 'technology': [
     'AAPL',
     'NVDA',
