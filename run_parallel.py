@@ -71,7 +71,7 @@ class ReportGenerator:
     def get_today_opportunities_tickers(self):
         #
         today = datetime.now().strftime("%Y-%m-%d")
-        if not os.path.exists('./reports/{today}/机会/'):
+        if not os.path.exists(f'./reports/{today}/机会/'):
             return []
         opportunity_files = os.listdir(f'./reports/{today}/机会/')
         tickers = [filename.split('_')[0] for filename in opportunity_files if filename.endswith('.md')]
@@ -190,10 +190,10 @@ if __name__ == "__main__":
     start_date = '2025-10-01'
     end_date = '2025-12-31'
     period = '1mo'
-    interval = '1h'
+    interval = '5min'
     tickers = [
-        'CRCL', 
-        # 'NTFX',
+        'NKE', 
+        'CDE',
         # 'PLUG',
         # # 'RGTI',
         # 'RIVN',
@@ -202,9 +202,9 @@ if __name__ == "__main__":
     
     report_generator = ReportGenerator( start_date , end_date , period, interval)
 
-    tickers = watch_list
+    # tickers = watch_list
     # tickers = report_gene
-    # rator.get_today_opportunities_tickers()
+    tickers = report_generator.get_today_opportunities_tickers()
 
     print(f"待分析股票共有 {len(tickers)} 只")
 
