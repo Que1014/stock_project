@@ -169,11 +169,12 @@ class ReportGenerator:
                     output_file.parent.mkdir(parents=True, exist_ok=True)
                     # 移动到机会文件夹
                     os.replace(output_dir / f"{ticker}_{hour_minute}.md", output_file)
+                    
+                    os.system(f'code {output_file}')  # 在默认Markdown查看器中打开文件
                 else:
                     print(f"{ticker}信心指数为 {confidence_index}，未达到保存标准。")
             except Exception as e:
                 print(f"提取信心指数失败: {str(e)}")
-        os.system(f'code {output_file}')  # 在默认Markdown查看器中打开文件
         # 保存结果到文件
         print(f"分析报告已保存到 {output_file}")
         
@@ -190,7 +191,7 @@ if __name__ == "__main__":
     start_date = '2025-10-01'
     end_date = '2025-12-31'
     period = '1mo'
-    interval = '5min'
+    interval = '5m'
     tickers = [
         'NKE', 
         'CDE',
@@ -202,9 +203,8 @@ if __name__ == "__main__":
     
     report_generator = ReportGenerator( start_date , end_date , period, interval)
 
-    # tickers = watch_list
-    # tickers = report_gene
-    tickers = report_generator.get_today_opportunities_tickers()
+    tickers = watch_list
+    # tickers = report_generator.get_today_opportunities_tickers()
 
     print(f"待分析股票共有 {len(tickers)} 只")
 
