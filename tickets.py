@@ -1,18 +1,19 @@
 watch_list = [
-    'AMD','AMZN',
+    'AAPL','AMD','AMZN',
     'BBAI', 'BMNR', 'BTQ', 'BYND',
-    'CRWV',
-    'F'
+    'CRM','CRWV',
+    'F',
     'GRAB',
-    'HIVE',
+    'HIMS','HIVE', 'HOOD', 
     'INTC', 'IREN',
     'LIDR',
-    'MARA', 'MP','MSTR',
-    'NBIS','NVDA',
-    'OPEN',
+    'MARA', 'META', 'MP','MSTR',
+    'NBIS','NFLX','NVDA',
+    'ONDS', 'OPEN', 'ORCL' ,
     'PLTR','PLUG', 'PYPL',
     'QS',
     'RIVN', 'RGTI',
+    'SNAP','SOFI',
     'TSLA',
     'U', 'USAR', 'UUUU'
 ]
