@@ -173,6 +173,13 @@ class ReportGenerator:
                     os.system(f'code {output_file}')  # 在默认Markdown查看器中打开文件
                 else:
                     print(f"{ticker}信心指数为 {confidence_index}，未达到保存标准。")
+
+                    # 移除这个ticker在这次之前生成的文件
+                    previous_files = list(output_dir.glob(f"{ticker}_*.md"))
+                    for file in previous_files:
+                        if file != output_file:
+                            os.remove(file)
+
             except Exception as e:
                 print(f"提取信心指数失败: {str(e)}")
         # 保存结果到文件

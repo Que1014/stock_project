@@ -3,19 +3,20 @@ watch_list = [
     'BBAI', 'BMNR', 'BTQ', 'BYND',
     'CRM','CRWV',
     'F',
-    'GRAB',
+    'GOOG', 'GRAB',
     'HIMS','HIVE', 'HOOD', 
-    'INTC', 'IREN',
+    'INTC','IONQ', 'IREN',
     'LIDR',
-    'MARA', 'META', 'MP','MSTR',
-    'NBIS','NFLX','NVDA',
+    'MARA', 'META', 'MP', 'MSFT','MSTR',
+    'NBIS','NFLX', 'NKE','NVDA',
     'ONDS', 'OPEN', 'ORCL' ,
-    'PLTR','PLUG', 'PYPL',
+    'PG', 'PLTR','PLUG', 'PYPL',
     'QS',
     'RIVN', 'RGTI',
     'SNAP','SOFI',
     'TSLA',
-    'U', 'USAR', 'UUUU'
+    'U', 'USAR', 'UUUU',
+    'WMT'
 ]
 
 leading_stocks = {
