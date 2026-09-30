@@ -1,22 +1,30 @@
 watch_list = [
     'AAPL','AMD','AMZN',
     'BBAI', 'BMNR', 'BTQ', 'BYND',
-    'CRM','CRWV',
+    'CIFR', 'COIN','CRM','CRWV',
     'F',
-    'GOOG', 'GRAB',
+    'GME','GOOG', 'GRAB',
     'HIMS','HIVE', 'HOOD', 
     'INTC','IONQ', 'IREN',
     'LIDR',
-    'MARA', 'META', 'MP', 'MSFT','MSTR',
+    'MARA', 'META', 'MP', 'MSFT','MSTR','MU',
     'NBIS','NFLX', 'NKE','NVDA',
     'ONDS', 'OPEN', 'ORCL' ,
-    'PG', 'PLTR','PLUG', 'PYPL',
-    'QS',
-    'RIVN', 'RGTI',
+    'PFE', 'PG', 'PLTR','PLUG', 'PYPL',
+    'QS','QUBT',
+    'RGTI','RIVN', 'RR',
     'SNAP','SOFI',
     'TSLA',
     'U', 'USAR', 'UUUU',
     'WMT'
+]
+
+nigt_stocks = [
+    'AAPL','AMD','AMZN',
+    'OPEN',
+    'PLTR',
+    'RGTI',
+    'TSLA',
 ]
 
 leading_stocks = {

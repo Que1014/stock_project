@@ -2,6 +2,7 @@
 # 验证路径设置
 from asyncio import tasks
 from datetime import datetime
+import time
 import multiprocessing
 from operator import ge
 import os
@@ -12,8 +13,10 @@ from importnb import Notebook
 import ipywidgets as widgets
 from IPython.display import display
 from tickets import *
+from serverchan_sdk import sc_send
 
-from src.indicators.gaussian_channel import gaussian_channel
+from src.report_generator.query_to_wechat import *
+from src.prompt import *
 
 class ReportGenerator:
 
@@ -57,9 +60,9 @@ class ReportGenerator:
             sys.path.insert(0, project_root)
 
             
-        # 打印当前环境路径
-        print(f"Python executable: {sys.executable}")
-        print(f"Project root: {project_root}")
+        # 打印当前环境路径，调试用
+        # print(f"Python executable: {sys.executable}")
+        # print(f"Project root: {project_root}")
 
         # 下载股票数据
 
@@ -82,6 +85,7 @@ class ReportGenerator:
         df = self.report(ticker)
         while df.shape[0] < 10:
             df = self.report(ticker)
+        print(f"✅ {ticker} 数据下载完成，数据行数: {df.shape[0]}，开始分析...")
         """
         智能生成股票技术面分析报告和预测未来趋势
         输入：预处理后的美股数据
@@ -95,6 +99,7 @@ class ReportGenerator:
             # 提取元数据
         start_date = df.index.min()
         end_date = df.index.max()
+        interval = self.interval
 
         # 生成数据摘要
         data_summary = f"""
@@ -104,27 +109,47 @@ class ReportGenerator:
         """
         
         # 步骤2：构建专业分析提示词
-        analysis_prompt = f"""你是美股投资专家，这是{ticker}从{start_date}到{end_date}的交易数据。
-        请用简单专业的语言分析{ticker}的走势及其多/空投资机会及操作建议（请在操作建议时，附上信心指数，<20不建议操作；20-40观望；40-60可以清仓，及时止损；60-80可以开始逐步建仓；>80强烈信号，或可以立即操作）：
-        {latest}（我发送了数据列：{latest.columns.tolist()}，请确认你确实收到的可以用于判断的指标，如果有数据异常请告诉我）。回答格式至少包含以下三部分：
-        1. 总体操作机会（输出需要包含"信心指数：XX"，XX为指数的数字。请严格遵守这个格式，因为代码提取"信心指数："之后的数字）
-        2. 市场技术面分析（包含关键支撑位和阻力位）
-        3. 日内操作建议（多头策略/空头策略/观望，信心指数）
-        4. 中/短期（约1-2周）操作建议（多头策略/空头策略/观望，信心指数）
-        如果你认为提供更多技术指标会有帮助，请告诉我有哪些，我会补充。
-        """
+        ohlcv = latest[['Open', 'High', 'Low', 'Close', 'Volume']]
+        analysis_prompt = structural_intraday_v1(
+            ticker=ticker,
+            data_5min = ohlcv,
+            data_15min = ohlcv.resample('15min').agg({
+                'Open': 'first',
+                'High': 'max',
+                'Low': 'min',
+                'Close': 'last',
+                'Volume': 'sum'
+            }),
+
+            data_1h = ohlcv.resample('1h').agg({
+                'Open': 'first',
+                'High': 'max',
+                'Low': 'min',
+                'Close': 'last',
+                'Volume': 'sum'
+            }),
+
+            data_4h = ohlcv.resample('4h').agg({
+                'Open': 'first',
+                'High': 'max',
+                'Low': 'min',
+                'Close': 'last',
+                'Volume': 'sum'
+            })
+        )   
         
         # 步骤3：调用Deepseek API并解析结果
             # try:
         # notebook_path = get_ipython().config["IPKernelApp"]["connection_file"].split("\\")[-2]
         # project_root = Path(notebook_path).resolve().parent.parent# 动态构建项目路径 
         client = self.OpenAI(
-                api_key='sk-svlwkvpmiesxltcrmogahgwdpsucauiqdvdrgssmogbtujvh',
+                api_key='',
                 base_url='https://api.siliconflow.cn/v1'
                 )
         
         completion = client.chat.completions.create(
-            model="deepseek-ai/DeepSeek-R1",
+            # model="deepseek-ai/DeepSeek-R1",
+            model="deepseek-ai/DeepSeek-V4-Flash",
             messages=[
                 {"role": "user", "content": analysis_prompt}
             ],
@@ -139,7 +164,7 @@ class ReportGenerator:
 
         # 提取回答和思考内容
         answer = response_message.content
-        reasoning = response_message.reasoning_content
+        # reasoning = response_message.reasoning_content
 
         # 格式化输出，只显示回答，不显示思考
         formatted_output = f'{answer.strip()}'
@@ -171,6 +196,13 @@ class ReportGenerator:
                     os.replace(output_dir / f"{ticker}_{hour_minute}.md", output_file)
                     
                     os.system(f'code {output_file}')  # 在默认Markdown查看器中打开文件
+
+                    # 发送到手机
+                    send_ntfy(
+                        title=f"DeepSeek Analysis Report of {ticker}",
+                        message=data_summary + "\n" + formatted_output,
+                        topic="deepseek-structure-20260929"
+                    )
                 else:
                     print(f"{ticker}信心指数为 {confidence_index}，未达到保存标准。")
 
@@ -197,36 +229,51 @@ if __name__ == "__main__":
     
     start_date = '2025-10-01'
     end_date = '2025-12-31'
-    period = '1mo'
+    period = '59d'
     interval = '5m'
     tickers = [
-        'NKE', 
-        'CDE',
-        # 'PLUG',
-        # # 'RGTI',
-        # 'RIVN',
-        # 'NBIS',
+        "^NDX", 
+        "GC=F",
+        "EURUSD=X",
+        "GBPUSD=X"
     ]
     
     report_generator = ReportGenerator( start_date , end_date , period, interval)
 
-    tickers = watch_list
+    # tickers = watch_list
     # tickers = report_generator.get_today_opportunities_tickers()
 
-    print(f"待分析股票共有 {len(tickers)} 只")
+    # 循环query
+    round = 1
+    round_interval_min = 30
+    delay_min = 30
+    time.sleep(delay_min * 60)  # 延迟X分钟后开始第一轮分析
 
-    # current_position = ''
-    # current_position = '当前持仓: 多头，占总仓位21%，均价 $56.08。'
-    # current_position = '当前持仓: 空头，占总仓位21%，均价 $56.08。'
-    # current_position = '当前未开仓。'
-    
-    max_workers = multiprocessing.cpu_count()
-    print(f"检测到 {max_workers} 个 CPU 核心，将使用进程池进行并发处理...")
-    
-    iterations = len(tickers)//max_workers + 1
-    print(f"实际使用 {max_workers-1} 个进程进行并发处理，共 {iterations} 轮...")
-    for i in range(iterations):
-        print(f"第 {i+1} 轮分析开始...")
-        with multiprocessing.Pool(processes=max_workers-1) as pool:
-            pool.starmap(report_generator.get_deepseek_analysis, [(ticker,) for ticker in tickers[i*max_workers:(i+1)*max_workers]])
-    print("所有股票分析任务已完成。")
+    while True:
+        print(f"第 {round} 轮分析开始...")
+        print(f"待分析股票共有 {len(tickers)} 只")
+
+        # current_position = ''
+        # current_position = '当前持仓: 多头，占总仓位21%，均价 $56.08。'
+        # current_position = '当前持仓: 空头，占总仓位21%，均价 $56.08。'
+        # current_position = '当前未开仓。'
+        
+        max_workers = multiprocessing.cpu_count()
+        print(f"检测到 {max_workers} 个 CPU 核心，将使用进程池进行并发处理...")
+        
+        iterations = len(tickers)//max_workers + 1
+        print(f"实际使用 {max_workers-1} 个进程进行并发处理，共 {iterations} 轮...")
+        for i in range(iterations):
+            print(f"第 {i+1} 轮分析开始...")
+            with multiprocessing.Pool(processes=max_workers-1) as pool:
+                pool.starmap(report_generator.get_deepseek_analysis, [(ticker,) for ticker in tickers[i*max_workers:(i+1)*max_workers]])
+
+        print("所有股票分析任务已完成。")
+
+        round += 1
+        print(f"当前时间{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}，第 {round-1} 轮分析完成，等待 {round_interval_min} 分钟后开始下一轮...")
+
+        # sleep
+        time.sleep(round_interval_min * 60)
+        
+
