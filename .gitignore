@@ -1,3 +1,6 @@
+# 输出
+reports/
+
 # 强制忽略.env类文件
 .env*
 !.env.example

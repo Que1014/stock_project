@@ -1,7 +1,7 @@
 def classic_prompt_v1(ticker, start_date, end_date, interval, latest):
     return f"""
             你是美股投资专家，这是{ticker}从{start_date}到{end_date}的{interval}级别交易数据（我发送了数据列：{latest.columns.tolist()}，请确认你确实收到的可以用于判断的指标，如果有数据异常请告诉我）。
-            请用简单专业的语言分析{ticker}的走势及其多/空投资机会及操作建议（请在操作建议时，附上0-99之间的信心指数。说明：<20不建议操作；20-40观望；40-60可以轻仓，及时止损；60-80可以开始逐步建仓；>80强烈信号，或可以立即操作）：
+            请用简单专业的语言分析{ticker}的走势及其多/空投资机会及操作建议（请在操作建议时，附上0-99之间的信心指数。说明：<20不建议操作；20-40观望；40-60可以轻仓，及时止损；60-80可以开始逐步建仓；>80强烈信号，或可以立即操作。只有该数字大于70才被认为有实际操作的价值）：
             {latest}。回答格式至少包含以下四部分：
             1. 总体操作机会（输出需要包含"信心指数：XX"，XX为指数的数字。请严格遵守这个格式，因为后续代码提取"信心指数："之后两位的数字）
             2. 市场技术面分析（包含关键支撑位和阻力位）
@@ -10,9 +10,30 @@ def classic_prompt_v1(ticker, start_date, end_date, interval, latest):
             如果你认为提供更多技术指标会有帮助，请告诉我有哪些，我会补充。
         """
 
+def classic_prompt_muilti_v1(ticker, data_4h, data_1h, data_15min, data_5min):
+    return f"""
+            你是美股投资专家，请用简单专业的语言分析{ticker}的走势及其多/空投资机会及操作建议（请在操作建议时，附上0-99之间的信心指数。说明：<20不建议操作；20-40观望；40-60可以轻仓，及时止损；60-80可以开始逐步建仓；>80强烈信号，或可以立即操作。只有该数字大于70才被认为有实际操作的价值）：
+            回答格式至少包含以下四部分：
+            1. 总体操作机会（输出需要包含"信心指数：XX"，XX为指数的数字。请严格遵守这个格式，因为后续代码提取"信心指数："之后两位的数字）
+            2. 市场技术面分析（包含关键支撑位和阻力位）
+            3. 日内操作建议（多头策略/空头策略/观望，信心指数）
+            4. 中/短期（约1-2周）操作建议（多头策略/空头策略/观望，信心指数）
+            如果你认为提供更多技术指标会有帮助，请告诉我有哪些，我会补充。       
+
+            这以下是{ticker}的交易数据：
+            4H数据：
+            {data_4h}
+            1H数据：   
+            {data_1h}
+            15min数据：
+            {data_15min}
+            5min数据：
+            {data_5min} 
+        """
+
 def structural_intraday_v1(ticker, data_4h, data_1h, data_15min, data_5min):
     return f"""
-            请根据以下的模型，分析{ticker}的日内走势，并给出操作建议：
+            你是美股投资专家，请根据以下的模型，分析{ticker}的日内走势，并给出操作建议：
             我主要交易黄金、外汇、虚拟货币等流动性较高、日内波动较大的品种，主要做 intraday swing，通常持仓数小时，而不是极短线 scalping。
 
             我的核心框架是：
@@ -53,11 +74,11 @@ def structural_intraday_v1(ticker, data_4h, data_1h, data_15min, data_5min):
             4H 原本是强 bullish structure；
             随后价格上下两边都刺破 swing high/low，但没有形成真正结构突破；
             于是形成 balance/range。
-            因为这个 balance 是发生在强 bullish background 上，所以他仍然偏向 bullish，并认为 range low 做多优于 range high 做空。
+            因为这个 balance 是发生在强 bullish background 上，所以我仍然偏向 bullish，并认为 range low 做多优于 range high 做空。
 
             三、Key Location：
 
-            他关注的 location 包括：
+            我关注的 location 包括：
             Fibonacci 0.5、0.618、0.786 retracement；
             Fibonacci 1.618 extension；
             HTF support/resistance；
@@ -69,7 +90,7 @@ def structural_intraday_v1(ticker, data_4h, data_1h, data_15min, data_5min):
             明显 liquidity pool；
             trendline 等。
 
-            他曾明确展示过五个条件：
+            我曾明确展示过五个条件：
 
             进入溢价/折价区，例如 0.5–0.618–0.786；
 
@@ -81,7 +102,7 @@ def structural_intraday_v1(ticker, data_4h, data_1h, data_15min, data_5min):
 
             次级别 structure shift / CHOCH。
 
-            他说大约满足 3/5 就可以形成交易机会。
+            我说大约满足 3/5 就可以形成交易机会。
 
             但目前不要把“3/5”理解成机械打分系统。根据多个案例，更可能是一个 discretionary confluence checklist：
             Fibonacci/OB/FVG 是 location；
@@ -91,7 +112,7 @@ def structural_intraday_v1(ticker, data_4h, data_1h, data_15min, data_5min):
 
             四、Liquidity：
 
-            他非常关注：
+            我非常关注：
             previous swing high/low；
             equal highs/lows；
             多次测试的 high/low；
@@ -108,7 +129,7 @@ def structural_intraday_v1(ticker, data_4h, data_1h, data_15min, data_5min):
 
             五、Reaction：
 
-            进入关键区域或发生 liquidity sweep 后，他观察：
+            进入关键区域或发生 liquidity sweep 后，我观察：
             长上影/下影；
             快速 rejection；
             displacement；
@@ -225,7 +246,7 @@ def structural_intraday_v1(ticker, data_4h, data_1h, data_15min, data_5min):
 
             十二、Liquidity-to-Liquidity：
 
-            他的交易很可能遵循：
+            我的交易很可能遵循：
             一个 liquidity/structure location → 另一个 liquidity/structure target。
 
             例如：
@@ -315,11 +336,11 @@ def structural_intraday_v1(ticker, data_4h, data_1h, data_15min, data_5min):
             SL 在15min OB 下影线/极端 low 下方；
             TP 为4H balance high；
             约6R；
-            之后市场受消息推动突破 balance high，但他已经按照原定 intraday swing target 平仓。
+            之后市场受消息推动突破 balance high，但我已经按照原定 intraday swing target 平仓。
 
             十五、仓位管理：
 
-            目前观察到他通常：
+            目前观察到我通常：
             不加仓；
             不减仓；
             不频繁移动仓位；
@@ -330,7 +351,7 @@ def structural_intraday_v1(ticker, data_4h, data_1h, data_15min, data_5min):
 
             十六、系统最核心的哲学：
 
-            他不是试图预测“下一根 K 线涨还是跌”，而是在寻找：
+            我不是试图预测“下一根 K 线涨还是跌”，而是在寻找：
             一个高周期有意义的位置；
             这个位置附近存在 liquidity；
             价格先把 liquidity 清扫掉；
@@ -352,7 +373,7 @@ def structural_intraday_v1(ticker, data_4h, data_1h, data_15min, data_5min):
             5min数据：
             {data_5min} 
 
-            请用简单专业的语言分析{ticker}的走势及其多/空投资机会及操作建议（请在操作建议时，附上0-99之间的信心指数。说明：<20不建议操作；20-40观望；40-60可以轻仓，及时止损；60-80可以开始逐步建仓；>80强烈信号，或可以立即操作）：
+            请用简单专业的语言分析{ticker}的走势及其多/空投资机会及操作建议（请在操作建议时，附上0-99之间的信心指数。说明：<20不建议操作；20-40观望；40-60可以轻仓，及时止损；60-80可以开始逐步建仓；>80强烈信号，或可以立即操作。只有该数字大于70才被认为有实际操作的价值）：
             回答格式至少包含以下四部分：
             1. 总体操作机会（输出需要包含"信心指数：XX"，XX为指数的数字。请严格遵守这个格式，因为后续代码提取"信心指数："之后两位的数字）
             2. 市场技术面分析（包含关键支撑位和阻力位）

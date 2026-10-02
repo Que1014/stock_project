@@ -7,6 +7,7 @@ import multiprocessing
 from operator import ge
 import os
 import pathlib
+import subprocess
 import sys
 from pathlib import Path
 from importnb import Notebook
@@ -110,7 +111,7 @@ class ReportGenerator:
         
         # 步骤2：构建专业分析提示词
         ohlcv = latest[['Open', 'High', 'Low', 'Close', 'Volume']]
-        analysis_prompt = structural_intraday_v1(
+        analysis_prompt = classic_prompt_muilti_v1(
             ticker=ticker,
             data_5min = ohlcv,
             data_15min = ohlcv.resample('15min').agg({
@@ -143,7 +144,7 @@ class ReportGenerator:
         # notebook_path = get_ipython().config["IPKernelApp"]["connection_file"].split("\\")[-2]
         # project_root = Path(notebook_path).resolve().parent.parent# 动态构建项目路径 
         client = self.OpenAI(
-                api_key='',
+                api_key='sk-ncplagtukjxedxacdfgqueaswvweqiyrqyhkgurxjvzqmuko',
                 base_url='https://api.siliconflow.cn/v1'
                 )
         
@@ -154,10 +155,12 @@ class ReportGenerator:
                 {"role": "user", "content": analysis_prompt}
             ],
             max_tokens = 8192,
-            top_p = 0.1,
-            temperature = 0.1,
-            frequency_penalty = 0.2,
-            presence_penalty = 0.3,
+            temperature = 0.0,
+            extra_body = {
+                "enable_thinking": False,  
+                # "enable_thinking": True,  
+                # "reasoning_effort": "max",  
+            }
         )
         # 解析响应
         response_message = completion.choices[0].message
@@ -194,8 +197,12 @@ class ReportGenerator:
                     output_file.parent.mkdir(parents=True, exist_ok=True)
                     # 移动到机会文件夹
                     os.replace(output_dir / f"{ticker}_{hour_minute}.md", output_file)
-                    
-                    os.system(f'code {output_file}')  # 在默认Markdown查看器中打开文件
+
+                    # 用 VS Code 打开
+                    subprocess.Popen([
+                        "code",
+                        str(output_file.resolve())
+                    ])
 
                     # 发送到手机
                     send_ntfy(
@@ -246,7 +253,8 @@ if __name__ == "__main__":
     # 循环query
     round = 1
     round_interval_min = 30
-    delay_min = 30
+    delay_min = 0
+    print(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}：延迟 {delay_min} 分钟后开始第一轮分析...")
     time.sleep(delay_min * 60)  # 延迟X分钟后开始第一轮分析
 
     while True:
