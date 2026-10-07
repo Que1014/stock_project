@@ -1,6 +1,12 @@
 # 输出
 reports/
 
+# API key
+api_key.py
+
+# 环境
+.venv/*
+
 # 强制忽略.env类文件
 .env*
 !.env.example

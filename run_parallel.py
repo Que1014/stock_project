@@ -14,7 +14,7 @@ from importnb import Notebook
 import ipywidgets as widgets
 from IPython.display import display
 from tickets import *
-from serverchan_sdk import sc_send
+from api_key import *
 
 from src.report_generator.query_to_wechat import *
 from src.prompt import *
@@ -111,7 +111,7 @@ class ReportGenerator:
         
         # 步骤2：构建专业分析提示词
         ohlcv = latest[['Open', 'High', 'Low', 'Close', 'Volume']]
-        analysis_prompt = classic_prompt_muilti_v1(
+        analysis_prompt = structural_intraday_v1(
             ticker=ticker,
             data_5min = ohlcv,
             data_15min = ohlcv.resample('15min').agg({
@@ -144,7 +144,7 @@ class ReportGenerator:
         # notebook_path = get_ipython().config["IPKernelApp"]["connection_file"].split("\\")[-2]
         # project_root = Path(notebook_path).resolve().parent.parent# 动态构建项目路径 
         client = self.OpenAI(
-                api_key='sk-ncplagtukjxedxacdfgqueaswvweqiyrqyhkgurxjvzqmuko',
+                api_key=deepseek,
                 base_url='https://api.siliconflow.cn/v1'
                 )
         
@@ -195,14 +195,6 @@ class ReportGenerator:
                     print(f"{ticker}提取到高信心指数: {confidence_index}，保存到机会文件夹")
                     output_file = output_dir / f"机会/{ticker}_{hour_minute}.md"
                     output_file.parent.mkdir(parents=True, exist_ok=True)
-                    # 移动到机会文件夹
-                    os.replace(output_dir / f"{ticker}_{hour_minute}.md", output_file)
-
-                    # 用 VS Code 打开
-                    subprocess.Popen([
-                        "code",
-                        str(output_file.resolve())
-                    ])
 
                     # 发送到手机
                     send_ntfy(
@@ -210,6 +202,19 @@ class ReportGenerator:
                         message=data_summary + "\n" + formatted_output,
                         topic="deepseek-structure-20260929"
                     )
+                    
+                    # 移动到机会文件夹
+                    os.replace(output_dir / f"{ticker}_{hour_minute}.md", output_file)
+
+                    # debug
+                    print("output_file:", output_file)
+                    print("resolved:", output_file.resolve())
+                    print("exists:", output_file.exists())
+                    # 用 VS Code 打开
+                    subprocess.Popen([
+                        "code",
+                        str(output_file.resolve())
+                    ])
                 else:
                     print(f"{ticker}信心指数为 {confidence_index}，未达到保存标准。")
 
